@@ -109,6 +109,7 @@ Fujitsu LIFEBOOK U939/B (i5-8265U / UHD 620)黑蘋果macOS Sequoia 15 EFI &amp; 
 
 **多次重啟**：安裝過程會重啟 3-5 次，每次請手動從 Boot Menu 選隨身碟，並在 OpenCore 選單選 macOS Installer 繼續。
 轉移 EFI：進入桌面後，將隨身碟的 EFI 資料夾複製到本機硬碟的 ESP (EFI) 分割區。
+
 **驅動微調**：若有舊款硬體，可下載 OpenCore Legacy Patcher (OCLP) 進行 Root Patch。
 
 
