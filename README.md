@@ -2,6 +2,99 @@
 Fujitsu LIFEBOOK U939/B (i5-8265U / UHD 620)黑蘋果macOS Sequoia 15 EFI &amp; 安裝教學  macOS Sequoia Hackintosh EFI &amp; Installation Guide
 # 💻 Fujitsu LIFEBOOK U939/B 黑蘋果 (macOS Sequoia) 安裝教學
 
-> **機型規格**：Intel Core i5-8265U / UHD 620 / ALC255 / Intel Wi-Fi & BT
+> **機型規格**：Intel Core i5-8265U / UHD 620 / Realtek ALC255 / Intel Wi-Fi & BT
 > **安裝亮點**：OpCore-Simplify + UnPlugged 離線完整安裝 (免網路卡)
+
 ---
+
+## 📖 黑蘋果離線安裝教學
+
+這是一份結合 **OpCore-Simplify-GUI**（自動化 OpenCore EFI 生成工具）與 **UnPlugged**（離線版 macOS 安裝輔助腳本）的黑蘋果安裝教學。
+
+傳統的黑蘋果安裝需要手動下載各式驅動、手動修改複雜的 config.plist，且在沒有 Mac 的情況下很難製作出「完整版」的離線安裝碟（通常只能下載約 3GB 的線上恢復版，安裝時極度依賴網卡驅動與網速）。
+
+### 🌟 這套方案的優勢
+1. **EFI 簡單做**：利用 OpCore-Simplify-GUI，在 Windows 或 Mac 下用圖形介面就能一鍵生成適合你硬體的 OpenCore EFI。
+2. **免網卡離線安裝**：利用 **UnPlugged** 搭配 gibMacOS 下載的 12GB+ 完整版安裝包（`InstallAssistant.pkg`），直接在 Recovery 恢復模式下本機解包安裝，完美解決「安裝時網卡沒驅動、進不去系統下載」的痛點。
+
+---
+
+## 📀 準備工具與硬體需求
+
+* **USB 隨身碟**：16GB 或以上。
+* **目標安裝硬碟**：請確保該硬碟上沒有重要資料，安裝時會格式化。
+* **必要軟體下載**：
+  * [Python](https://www.python.org/downloads/)（協助工具啟動，安裝時切記勾選加入 PATH）
+  * [OpCore-Simplify-GUI](https://github.com/payne-huang/OpCore-Simplify-GUI)（圖形版 EFI 生成工具）
+  * [UnPlugged](https://github.com/corpnewt/UnPlugged)（離線安裝腳本 `UnPlugged.command`）
+  * [gibMacOS](https://github.com/corpnewt/gibMacOS)（下載完整 macOS 安裝包）
+  * [OpenCorePkg](https://github.com/acidanthera/OpenCorePkg/tree/master)（使用 Utilities/macrecovery 下載恢復鏡像）
+
+---
+
+## 🚀 第一階段：製作 OpenCore EFI 啟動檔案
+
+1. **偵測硬體並下載工具**：在 Windows 下執行 `OpCore-Simplify.exe`，切換到工具功能表，執行內建的硬體檢測工具，匯出報告。
+2. **設定硬體與系統版本**：選擇 macOS 版本（如 Sonoma 14 / Sequoia 15），勾選「僅使用 Intel 核顯」。
+3. **自動生成 ACPI 補丁與驅動 (Kexts)**：工具會自動勾選 ACPI 補丁（如 FakeEC, PLUG 等）與必備驅動，並自動匹配最佳 SMBIOS 機型。
+4. **構建並匯出 EFI**：點擊「建構 EFI」，工具會下載最新版 OpenCorePkg 並在本機生成 `EFI` 資料夾。
+
+---
+
+## 📦 第二階段：下載完整版 macOS 安裝檔與 Recovery
+
+### ⚠️ macOS Sonoma / Sequoia 重要提示
+由於 Sonoma/Sequoia 的 Recovery 環境預設不支援直接掛載 FAT32 或 ExFAT 磁區：
+* **引導恢復鏡像**：請下載 **macOS Monterey 12** 的 `BaseSystem.dmg`（讀取 ExFAT 極順暢）。
+* **完整安裝包**：下載全新的 macOS Sonoma 或 Sequoia。
+
+1. **下載完整安裝包**：
+   * 執行 `gibMacOS.bat`，輸入 `r` 切換成完整安裝版。
+   * 下載目標 macOS 版本的 Full Install，完成後於 `gibMacOS/macOS Downloads/` 取得 `InstallAssistant.pkg`。
+2. **下載引導恢復鏡像**：
+   * 開啟終端機/命令提示字元，切換至 `OpenCorePkg/Utilities/macrecovery`，輸入：
+     `py macrecovery.py -b Mac-FFE5EF870D7BA81A -m 00000000000000000 download`
+   * 下載完成會產生 `com.apple.recovery.boot` 資料夾（內含 `BaseSystem.dmg` 與 `BaseSystem.chunklist`）。
+
+---
+
+## 💾 第三階段：分割並製作 USB 啟動碟
+
+使用磁碟管理工具（如 DiskGenius）將 USB 分割為兩個區段：
+
+| 磁區名稱 | 格式 | 大小 | 存放內容 |
+| :--- | :--- | :--- | :--- |
+| **OPENCORE** | **FAT32** | 約 1GB | `EFI` 資料夾、`com.apple.recovery.boot` 資料夾 |
+| **UnPlugged** | **ExFAT** | 剩餘空間 | `InstallAssistant.pkg`、`UnPlugged.command` 腳本 |
+
+> ⚠️ **配置單位提示**：ExFAT 格式化時，配置單位大小請設定為 **1024 KB 或更小**，否則 Recovery 可能無法掛載該磁區。
+
+---
+
+## ⚙️ 第四階段：調整 BIOS 設定
+
+重開機進入 BIOS，調整以下設定：
+
+* **必須關閉 (Disable)**：
+  * Fast Boot (快速啟動)
+  * Secure Boot (安全啟動)
+  * SerialPort (序列埠)
+  * VT-d (若無法關閉，可在 OpenCore 中開啟 `DisableIoMapper`)
+  * CSM 傳統相容模式 (必須關閉以啟用純 UEFI)
+* **必須開啟 (Enable)**：
+  * VT-x (虛擬化技術)
+  * Above 4G Decoding (大於 4G 解碼)
+  * Hyper-Threading (超線程)
+  * SATA Mode: **AHCI** (絕不能是 RAID)
+
+儲存重開機，按下 Boot Menu 快捷鍵，選擇隨身碟 UEFI 模式啟動，進入 Recovery 恢復環境。
+
+---
+
+## 🛠️ 第五階段：使用 UnPlugged 進行離線安裝
+
+1. **抹除目標硬碟**：進入 **Disk Utility (磁碟工具)** ➔ 點擊左上角「顯示所有裝置」➔ 選擇實體硬碟點擊「抹除 (Erase)」，格式選擇 APFS，完成後關閉磁碟工具。
+2. **開啟終端機切換路徑**：點選上方選單列 `Utilities` ➔ `Terminal`，輸入：
+   ```bash
+   cd /Volumes/UnPlugged
+
