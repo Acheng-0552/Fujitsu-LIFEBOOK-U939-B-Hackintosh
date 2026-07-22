@@ -112,4 +112,78 @@ Fujitsu LIFEBOOK U939/B (i5-8265U / UHD 620)黑蘋果macOS Sequoia 15 EFI &amp; 
 
 **驅動微調**：若有舊款硬體，可下載 OpenCore Legacy Patcher (OCLP) 進行 Root Patch。
 
+---
+
+## 📋驅動順序與排錯
+
+在 `config.plist` 裡的 `Kernel -> Add` 必須維持標準順序：
+
+1. `Lilu.kext` (必須永遠排在第一個)
+2. `VirtualSMC.kext`
+3. `WhateverGreen.kext`
+4. `AppleALC.kext`
+5. `IntelMausi.kext`
+6. `itlwm.kext`
+7. `SMCBatteryManager.kext` / `SMCProcessor.kext` / `ECEnabler.kext`
+8. `VoodooPS2Controller.kext`
+9. `BrightnessKeys.kext`
+10. `VoodooI2C.kext` ➔ `VoodooI2CHID.kext`
+11. `IntelBluetoothFirmware.kext` ➔ `IntelBTPatcher.kext` ➔ `BlueToolFixup.kext`
+
+> ⚠️ **重複 VoodooInput 提示**：ProperTree 清掃發出 Duplicate CFBundleIdentifiers 警告時，**請直接點 Yes** 停用重複模組。
+
+---
+
+## 🔍 config.plist 終極檢查清單
+
+### 1. ACPI
+* [x] **Add**：`SSDT-PLUG.aml` / `SSDT-EC-USBX.aml` / `SSDT-PNLF.aml`
+* [x] **Quirks**：`FadtEnableReset` ➔ `False` | `ResetHwSig` ➔ `False` | `SyncTableIds` ➔ `False`
+
+### 2. Booter -> Quirks
+* [x] `AvoidRuntimeDefrag` ➔ `True`
+* [x] `DevirtualiseMmio` ➔ `False`
+* [x] `EnableSafeModeSlide` ➔ `True`
+* [x] `RebuildAppleMemoryMap` ➔ `True` (Whiskey Lake 必開)
+* [x] `SetupVirtualMap` ➔ `True`
+* [x] `SyncRuntimePermissions` ➔ `True`
+
+### 3. DeviceProperties -> Add
+* **內顯 `PciRoot(0x0)/Pci(0x2,0x0)`**：
+  * `AAPL,ig-platform-id` (`Data`) ➔ `00009B3E`
+  * `device-id` (`Data`) ➔ `9B3E0000`
+  * `framebuffer-patch-enable` (`Data`) ➔ `01000000`
+  * `framebuffer-stolenmem` (`Data`) ➔ `00003001`
+  * `framebuffer-fbmem` (`Data`) ➔ `00000002`
+* **音效 `PciRoot(0x0)/Pci(0x1F,0x3)`**：
+  * `layout-id` (`Data`) ➔ `03000000`
+
+### 4. Kernel -> Quirks
+* [x] `AppleCpuPmCfgLock` ➔ `False`
+* [x] `AppleXcpmCfgLock` ➔ `True` (防止 CFG-Lock 卡死)
+* [x] `DisableIOMapper` ➔ `True` (防止 VT-d 崩潰)
+* [x] `XhciPortLimit` ➔ `False`
+
+### 5. Misc
+* **Boot**：`HideAuxiliary` ➔ `False` | `PickerMode` ➔ `Builtin` (排除圖形黑屏) | `ShowPicker` ➔ `True` | `Timeout` ➔ `5`
+* **Security**：`AllowSetDefault` ➔ `True` | `DmgLoading` ➔ `Signed` | `SecureBootModel` ➔ `Disabled` | `Vault` ➔ `Optional`
+
+### 6. NVRAM
+* **7C436110-AB2A-4BBB-A880-FE41995C9F82**：
+  * `boot-args` ➔ `-v keepsyms=1 debug=0x100 -igfxblr` *( -igfxblr 為 Whiskey Lake 抗黑屏參數 )*
+
+### 7. UEFI
+* **Drivers**：`OpenRuntime.efi` ➔ `True` | `OpenHfsPlus.efi` ➔ `True`
+* **Output**：`ConsoleControl` ➔ `True` | `ProvideConsoleGop` ➔ `True` (解決選單無畫面) | `Resolution` ➔ `Max`
+* **Quirks**：`RequestBootVarRouting` ➔ `True`
+
+---
+
+## 🚀 檢查完畢存檔四步驟
+1. 按 `Cmd + Shift + R` (OC Clean Snapshot) 重新掃描 Kexts 與 Drivers。
+2. 彈出重複驅動視窗點 **Yes**。
+3. 按 `Cmd + S` 儲存 `config.plist`。
+4. 重啟電腦，準備開機
+
+
 
