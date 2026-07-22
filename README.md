@@ -97,4 +97,9 @@ Fujitsu LIFEBOOK U939/B (i5-8265U / UHD 620)黑蘋果macOS Sequoia 15 EFI &amp; 
 2. **開啟終端機切換路徑**：點選上方選單列 `Utilities` ➔ `Terminal`，輸入：
    ```bash
    cd /Volumes/UnPlugged
+3. **執行 UnPlugged 腳本**：
+   ```bash
+   ./UnPlugged.command
+   # 若權限不足可改用：bash UnPlugged.command
+
 
