@@ -101,5 +101,6 @@ Fujitsu LIFEBOOK U939/B (i5-8265U / UHD 620)黑蘋果macOS Sequoia 15 EFI &amp; 
    ```bash
    ./UnPlugged.command
    # 若權限不足可改用：bash UnPlugged.command
+4. **​解包並開始安裝**：選擇 **Fully expand InstallAssistant.pkg** ，接著選擇目標硬碟（如 Macintosh HD），輸入 y 開始執行。背景會解開安裝包並喚醒官方安裝程式。(安裝期間請勿關閉終端機)
 
 
