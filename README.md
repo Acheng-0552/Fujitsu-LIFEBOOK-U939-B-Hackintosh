@@ -29,6 +29,8 @@ Fujitsu LIFEBOOK U939/B (i5-8265U / UHD 620)黑蘋果macOS Sequoia 15 EFI &amp; 
   * [UnPlugged](https://github.com/corpnewt/UnPlugged)（離線安裝腳本 `UnPlugged.command`）
   * [gibMacOS](https://github.com/corpnewt/gibMacOS)（下載完整 macOS 安裝包）
   * [OpenCorePkg](https://github.com/acidanthera/OpenCorePkg/tree/master)（使用 Utilities/macrecovery 下載恢復鏡像）
+  *
+[GenSMBIOS](https://github.com/corpnewt/GenSMBIOS)（生成序號用） 
 
 ---
 
@@ -38,6 +40,19 @@ Fujitsu LIFEBOOK U939/B (i5-8265U / UHD 620)黑蘋果macOS Sequoia 15 EFI &amp; 
 2. **設定硬體與系統版本**：選擇 macOS 版本（如 Sonoma 14 / Sequoia 15），勾選「僅使用 Intel 核顯」。
 3. **自動生成 ACPI 補丁與驅動 (Kexts)**：工具會自動勾選 ACPI 補丁（如 FakeEC, PLUG 等）與必備驅動，並自動匹配最佳 SMBIOS 機型。
 4. **構建並匯出 EFI**：點擊「建構 EFI」，工具會下載最新版 OpenCorePkg 並在本機生成 `EFI` 資料夾。
+
+## ⚠️ 重要提示：請務必自行生成 SMBIOS 機型序號！
+為了保護個人 Apple ID 與帳號安全，本教學所提供的EFI文件的 `config.plist` **已抹除個人專屬的三碼資訊**。
+
+**在正式開機與登入 Apple ID 前，請務必按照以下步驟填入你自己的序號：**
+
+1. 使用 [GenSMBIOS](https://github.com/corpnewt/GenSMBIOS) 或 OpenCore Configurator 工具。
+2. 選擇適當的機型（`MacBookPro15,2`）。
+3. 生成全新的三碼，並填入 `config.plist` 的 `PlatformInfo -> Generic` 欄位：
+   * `MLB` (Board Serial)
+   * `SystemSerialNumber` (Serial Number)
+   * `SystemUUID` (SmUUID)
+4. **切勿直接使用他人分享的序號**，否則可能導致 iCloud、iMessage、FaceTime 被封鎖或帳號遭停用！
 
 ---
 
