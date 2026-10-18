@@ -227,21 +227,23 @@ Fujitsu LIFEBOOK U939/B (i5-8265U / UHD 620)黑蘋果macOS Sequoia 15 EFI &amp; 
 ### 步驟 1：導出 BIOS 文字檔並尋找 DVMT 的位址
 1. **生成bios 韌體：**
    * 解壓縮 `Intel CSME System Tools v12`，​找裡面的  **FLASH PROGRAMMER TOOL** -> **WIN64** 資料夾，在 Windows 搜尋欄輸入 `cmd`， **右鍵** -> **以管理員身份運行** 
-   * 輸入指令 **「cd WIN64資料夾路徑」** 定位到資料夾路徑後輸入 **「FPTW64.exe -bios -d u939_bios.bin」** 當出現 `FPT Operation Successful`代表已經成功生成
-1. **開啟 UEFITool：**
-   * 執行 `UEFITool.exe`，按下 **File** -> **Open image file**，選取你 U939/B 的 BIOS `.rom` 或 `.bin` 檔案。
-2. **搜尋關鍵字：**
+   * 輸入指令 `cd WIN64資料夾路徑`定位到資料夾路徑後輸入 `FPTW64.exe -bios -d u939_bios.bin`當出現 **FPT Operation Successful** 代表已經成功生成
+2. **開啟 UEFITool：**
+   * 執行 `UEFITool.exe`，按下 **File** -> **Open image file**，選取你 U939/B 的 BIOS `.bin` 檔案。
+3. **搜尋關鍵字：**
    * 按下快速鍵 `Ctrl + F`，切換到 **Text** 標籤頁。
    * 輸入 `DVMT Pre-Allocated`，勾選 **Header and body**，然後點擊 **OK**。
-3. **定位並匯出 PE32 模組：**
+4. **定位並匯出 PE32 模組：**
    * 在下方搜尋結果視窗中，點兩下搜尋結果，主畫面會自動展開並高亮顯示目標模組（通常位於 Setup 或 Platform 結構下）。
-   * 在高亮項目的 **PE32 image section** 上點擊**右鍵**，選擇 **Extract as is**，另存為 `Setup_PE32.sct`（或 `.bin`）。
-4. **使用 Universal IFR Extractor 解碼：**
-   * 開啟 `Universal IFR Extractor.exe`。
-   * 在 Open File 選取剛才匯出的 `Setup_PE32.sct` 檔案。
-   * 點擊 **Extract**，軟體會生成一份 `Setup_PE32 IFR.txt` 的文字檔。
-5. **尋找關鍵 Offset：**
-   * 用記事本開啟 `Setup_PE32 IFR.txt`，按下 `Ctrl + F` 搜尋 **DVMT Pre-Allocated**。
+   * 在高亮項目的 **PE32 image section** 上點擊**右鍵**，選擇 **Extract as is**，另存為 `名字隨便.efi` 。
+5. **使用 IFRExtractor-RS 解碼：**
+   * 把剛剛生成的 `名字隨便.efi`複製到 `ifrextractor.exe`相同文件夾。
+   * 在該資料夾按住 **Shift + 滑鼠右鍵** ，選擇 **「在此處開啟 PowerShell 視窗」** 或 **「在此處開啟命令提示字元 (CMD)」** 。
+   * 輸入以下指令（假設你的檔案叫做 Section_PE32_image_SetupUtility_SetupUtility_body.efi） `ifrextractor.exe Section_PE32_image_SetupUtility_SetupUtility_body.efi
+`，軟體會生成多份 `Setup_PE32 IFR.txt` 的文字檔。
+6. **尋找關鍵 Offset：**
+   * 回到CMD，輸入 `findstr /i /s "DVMT" *.txt
+`，來快速找到 **DVMT Pre-Allocated**。
    * 你會看到類似下方的代碼（**請務必記下你電腦導出文字檔裡的實際數值**）：
      ```text
      0x1A2B3 One Of: DVMT Pre-Allocated, VarStoreInfo (VarOffset/VarName): 0x152, VarStore: 0x1, ...  
@@ -254,32 +256,32 @@ Fujitsu LIFEBOOK U939/B (i5-8265U / UHD 620)黑蘋果macOS Sequoia 15 EFI &amp; 
    * **VarOffset（暫存器位址）**：例如 **0x152**（此處僅為舉例，請以你的 `.txt` 為準！）。
    * **目標改寫數值**：把預設的 16M（`0x01`）改為 **32M（`0x02`）** 或 **64M（`0x03`）**。
 
-### 步驟 2：製作 RU.EFI 開機隨身碟
+### 步驟 2：製作 modGRUBShell 開機隨身碟
 1. 插入 FAT32 格式的隨身碟。
 2. 在隨身碟根目錄下建立資料夾層級：`/EFI/BOOT/`。
-3. 將下載好的 `RU.efi` 複製到 `/EFI/BOOT/` 資料夾內，並重新命名為 **`BOOTX64.EFI`**。
+3. 將下載好的 `modGRUBShell.efi` 複製到 `/EFI/BOOT/` 資料夾內，並重新命名為 **`BOOTX64.EFI`**。
    * 完整路徑為：`隨身碟:\EFI\BOOT\BOOTX64.EFI`
 
-### 步驟 3：進入 RU.EFI 修改 NVRAM 暫存器
+### 步驟 3：進入 modGRUBShell.efi 修改 NVRAM 暫存器
 1. **關閉安全啟動（Secure Boot）：**
    * 開機按 `F2`（或 `Fn + F2`）進入 U939/B 的 BIOS 介面。
    * 切換到 **Security** 標籤，將 **Secure Boot** 設為 **Disabled**。
    * 按 `F10` 儲存並重啟。
 2. **引導隨身碟開機：**
    * 開機連續按 `F12` 進入選單，選擇你的 USB 隨身碟開機。
-   * 畫面會進入 RU.EFI 的**藍色文字介面**。
-3. **切換到 Setup 模組：**
-   * 按下 **`Alt + =`**（或按 `F2` 打開選單）。
-   * 使用方向鍵向下滾動，找到 **Setup**（如果是 Dell 機型通常叫 IntelSetup，富士通等日系機型叫 Setup）。按下 `Enter` 進入。
-4. **定位至 VarOffset 位址：**
-   * 假設你在步驟一查到的 VarOffset 是 **0x152**：
-   * 畫面左側是列位址（例如 `00000150`），上方是行欄位（`00` 到 `0F`）。
-   * 移動游標至 **150** 行的 **02** 欄位置（即 `0x152` 交會處）。
-5. **改寫數值並儲存：**
-   * 游標停在該格上，原本顯示的數值應該是預設的 `01`（對應 16MB）。
-   * 直接鍵盤輸入 **`02`**（改為 32MB）或 **`03`**（改為 64MB）。
-   * 確認數字更改後，按下 **`Ctrl + W`** 儲存變更（畫面上方會跳出成功寫入提示）。
-   * 按下 **`Alt + Q`** 離開 RU.EFI 並重啟電腦。
+   * 畫面會進入 modGRUBShell.efi 會看到 **grub>**。
+3. **讀取目前的數值：**
+   * ​請先輸入以下指令確認目前 0x107 的數值，輸入 `setup_var 0x107
+`，如果成功讀出，且顯示 0x01（或類似預設值），代表成功對應到 Setup 變數。
+   *​💡 如果出現 error: offset 0x107 is out of range（超出範圍）：
+依據文章說明，請依序嘗試以下替代指令：
+ `​setup_var2 0x107`（會尋找 Custom 變數名稱）
+ `​setup_var_3 0x107`（會過濾掉太小的虛擬 VarStore）
+ ​`setup_var_cv Setup 0x107`（直接指定 VarStore 名稱為 Setup）
+4. **寫入新數值（改為 64MB）：**
+   * 確定上述哪一個指令可以正確讀取後，在後面加上欲寫入的數值 0x02： `setup_var 0x107 0x02`。
+   *​​執行完後，再輸入一次： `setup_var 0x107`驗證，確認第二個 GUID 的 offset 0x107 顯示為 0x02
+   * 修改成功後，​輸入 `reboot`重啟電腦（請務必「完全關機」再開機，不要使用軟體重啟，這樣新的 NVRAM BIOS 設定才會完全生效）。
 
 ### 步驟 4：調整黑蘋果 OpenCore config.plist
 BIOS 設定修改完成後，你的主機板已經原生為 macOS 釋放了足夠的顯存。請開啟 OpenCore 的 `config.plist`：
@@ -319,12 +321,6 @@ BIOS 設定修改完成後，你的主機板已經原生為 macOS 釋放了足�
    * 如果開機有聲音、鍵盤燈會亮，但螢幕黑屏，說明顯卡驅動成功載入，但 macOS 把信號發給了外接 HDMI 而是內建螢幕。
    * **解法：** 在 `config.plist` 的 `boot-args` 裡暫時加入 **`igfxonln=1`** 或 **`-no_compat_check`**；並加入 `framebuffer-con0-type` 指定內建 eDP 螢幕。
 
-### 狀況 C：UEFITool / IFR Extractor 找不到 DVMT Pre-Allocated
-1. **更換解包工具：**
-   * 某些日系 BIOS 的語系文字被壓縮在 AMI/Insyde 的特殊 Setup 模組裡，可以改用 Universal BIOS Backup Toolkit 備份你目前的原生 BIOS，再用 AMISetupWriter 或 UEFITool NE (New Engine) 來開啟尋找。
-2. **搜尋替代關鍵字：**
-   * 嘗試搜尋 `DVMT`、`Stolen Memory` 或 `Graphics Memory`。
-
-按上述流程操作，就有極大機會成功解放 Intel UHD 620 硬體加速
+## 按上述流程操作，就有極大機會成功解放 Intel UHD 620 硬體加速
 
 
