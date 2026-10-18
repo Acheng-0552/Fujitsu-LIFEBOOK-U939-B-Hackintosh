@@ -225,6 +225,9 @@ Fujitsu LIFEBOOK U939/B (i5-8265U / UHD 620)黑蘋果macOS Sequoia 15 EFI &amp; 
 ## 📖 第二部分：核心步驟
 
 ### 步驟 1：導出 BIOS 文字檔並尋找 DVMT 的位址
+1. **生成bios 韌體：**
+   * 解壓縮 `Intel CSME System Tools v12`，​找裡面的  **FLASH PROGRAMMER TOOL** -> **WIN64** 資料夾，在 Windows 搜尋欄輸入 `cmd`， **右鍵** -> **以管理員身份運行** 
+   * 輸入指令 **「cd WIN64資料夾路徑」** 定位到資料夾路徑後輸入 **「FPTW64.exe -bios -d u939_bios.bin」** 當出現 `FPT Operation Successful`代表已經成功生成
 1. **開啟 UEFITool：**
    * 執行 `UEFITool.exe`，按下 **File** -> **Open image file**，選取你 U939/B 的 BIOS `.rom` 或 `.bin` 檔案。
 2. **搜尋關鍵字：**
