@@ -216,9 +216,9 @@ Fujitsu LIFEBOOK U939/B (i5-8265U / UHD 620)黑蘋果macOS Sequoia 15 EFI &amp; 
 2. **空隨身碟**：1GB～32GB 即可，格式化為 **FAT32**。
 3. **工具軟體包**：
    - [UEFITool](https://github.com/LongSoft/UEFITool/releases)
-   - [Universal IFR Extractor](https://github.com/LongSoft/Universal-IFR-Extractor/releases)
-   - [RU.EFI](https://github.com/JamesAmiTw/ru-uefi)
-   - **Fujitsu U939/B 的 BIOS 韌體和備份**（可以用 Universal BIOS Backup Toolkit 備份你目前的 BIOS，或是從富士通官網下載對應 U939/B 的 BIOS 更新檔包提取）。
+   - [IFRExtractor-RS](https://github.com/LongSoft/IFRExtractor-RS)
+   - [Intel FPT](https://github.com/CE1CECL/IntelCSTools/releases/tag/v1.0.0)
+   - [modGRUBShell.efi](https://github.com/zearp/OptiHack/blob/master/EFI/OC/Tools/modGRUBShell.efi)
 
 ---
 
