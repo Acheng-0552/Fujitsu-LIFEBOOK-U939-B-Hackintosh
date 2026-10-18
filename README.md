@@ -17,8 +17,6 @@ Fujitsu LIFEBOOK U939/B (i5-8265U / UHD 620)黑蘋果macOS Sequoia 15 EFI &amp; 
 1. **EFI 簡單做**：利用 OpCore-Simplify-GUI，在 Windows 或 Mac 下用圖形介面就能一鍵生成適合你硬體的 OpenCore EFI。
 2. **免網卡離線安裝**：利用 **UnPlugged** 搭配 gibMacOS 下載的 12GB+ 完整版安裝包（`InstallAssistant.pkg`），直接在 Recovery 恢復模式下本機解包安裝，完美解決「安裝時網卡沒驅動、進不去系統下載」的痛點。
 
-**已知問題**：核顯驅動無法運作（7MB）
-
 ---
 
 ## 📀 準備工具與硬體需求
@@ -202,5 +200,128 @@ Fujitsu LIFEBOOK U939/B (i5-8265U / UHD 620)黑蘋果macOS Sequoia 15 EFI &amp; 
 3. 按 `Cmd + S` 儲存 `config.plist`。
 4. 重啟電腦，準備開機
 
+---
+
+# Fujitsu LifeBook U939/B RU.EFI 修改 BIOS DVMT 預分配顯存完整實作指南
+
+
+安裝完成後，您因該會發現核顯顯存只有7mb，跟著這部分教學操作，可以一舉解決 Intel UHD 620 核顯在黑蘋果（macOS）中卡 7MB顯存、無法開啟硬體加速的難題。
+
+---
+
+## 🛠️ 第一部分：實作前準備與軟體下載
+
+### 需要準備的工具與硬體：
+1. **Windows 10/11 環境**
+2. **空隨身碟**：1GB～32GB 即可，格式化為 **FAT32**。
+3. **工具軟體包**：
+   - [UEFITool](https://github.com/LongSoft/UEFITool/releases)
+   - [Universal IFR Extractor](https://github.com/LongSoft/Universal-IFR-Extractor/releases)
+   - [RU.EFI](https://github.com/JamesAmiTw/ru-uefi)
+   - **Fujitsu U939/B 的 BIOS 韌體和備份**（可以用 Universal BIOS Backup Toolkit 備份你目前的 BIOS，或是從富士通官網下載對應 U939/B 的 BIOS 更新檔包提取）。
+
+---
+
+## 📖 第二部分：核心步驟
+
+### 步驟 1：導出 BIOS 文字檔並尋找 DVMT 的位址
+1. **開啟 UEFITool：**
+   * 執行 `UEFITool.exe`，按下 **File** -> **Open image file**，選取你 U939/B 的 BIOS `.rom` 或 `.bin` 檔案。
+2. **搜尋關鍵字：**
+   * 按下快速鍵 `Ctrl + F`，切換到 **Text** 標籤頁。
+   * 輸入 `DVMT Pre-Allocated`，勾選 **Header and body**，然後點擊 **OK**。
+3. **定位並匯出 PE32 模組：**
+   * 在下方搜尋結果視窗中，點兩下搜尋結果，主畫面會自動展開並高亮顯示目標模組（通常位於 Setup 或 Platform 結構下）。
+   * 在高亮項目的 **PE32 image section** 上點擊**右鍵**，選擇 **Extract as is**，另存為 `Setup_PE32.sct`（或 `.bin`）。
+4. **使用 Universal IFR Extractor 解碼：**
+   * 開啟 `Universal IFR Extractor.exe`。
+   * 在 Open File 選取剛才匯出的 `Setup_PE32.sct` 檔案。
+   * 點擊 **Extract**，軟體會生成一份 `Setup_PE32 IFR.txt` 的文字檔。
+5. **尋找關鍵 Offset：**
+   * 用記事本開啟 `Setup_PE32 IFR.txt`，按下 `Ctrl + F` 搜尋 **DVMT Pre-Allocated**。
+   * 你會看到類似下方的代碼（**請務必記下你電腦導出文字檔裡的實際數值**）：
+     ```text
+     0x1A2B3 One Of: DVMT Pre-Allocated, VarStoreInfo (VarOffset/VarName): 0x152, VarStore: 0x1, ...  
+     0x1A2B8 One Of Option: 32M, Value (8 bit): 0x2  
+     0x1A2BF One Of Option: 64M, Value (8 bit): 0x3  
+     0x1A2C6 One Of Option: 16M, Value (8 bit): 0x1 (default)  
+     ```
+   📌 **筆記你查到的結果：**
+   * **VarStore 名稱**：Setup（如果有 GUID，也順便記下）。
+   * **VarOffset（暫存器位址）**：例如 **0x152**（此處僅為舉例，請以你的 `.txt` 為準！）。
+   * **目標改寫數值**：把預設的 16M（`0x01`）改為 **32M（`0x02`）** 或 **64M（`0x03`）**。
+
+### 步驟 2：製作 RU.EFI 開機隨身碟
+1. 插入 FAT32 格式的隨身碟。
+2. 在隨身碟根目錄下建立資料夾層級：`/EFI/BOOT/`。
+3. 將下載好的 `RU.efi` 複製到 `/EFI/BOOT/` 資料夾內，並重新命名為 **`BOOTX64.EFI`**。
+   * 完整路徑為：`隨身碟:\EFI\BOOT\BOOTX64.EFI`
+
+### 步驟 3：進入 RU.EFI 修改 NVRAM 暫存器
+1. **關閉安全啟動（Secure Boot）：**
+   * 開機按 `F2`（或 `Fn + F2`）進入 U939/B 的 BIOS 介面。
+   * 切換到 **Security** 標籤，將 **Secure Boot** 設為 **Disabled**。
+   * 按 `F10` 儲存並重啟。
+2. **引導隨身碟開機：**
+   * 開機連續按 `F12` 進入選單，選擇你的 USB 隨身碟開機。
+   * 畫面會進入 RU.EFI 的**藍色文字介面**。
+3. **切換到 Setup 模組：**
+   * 按下 **`Alt + =`**（或按 `F2` 打開選單）。
+   * 使用方向鍵向下滾動，找到 **Setup**（如果是 Dell 機型通常叫 IntelSetup，富士通等日系機型叫 Setup）。按下 `Enter` 進入。
+4. **定位至 VarOffset 位址：**
+   * 假設你在步驟一查到的 VarOffset 是 **0x152**：
+   * 畫面左側是列位址（例如 `00000150`），上方是行欄位（`00` 到 `0F`）。
+   * 移動游標至 **150** 行的 **02** 欄位置（即 `0x152` 交會處）。
+5. **改寫數值並儲存：**
+   * 游標停在該格上，原本顯示的數值應該是預設的 `01`（對應 16MB）。
+   * 直接鍵盤輸入 **`02`**（改為 32MB）或 **`03`**（改為 64MB）。
+   * 確認數字更改後，按下 **`Ctrl + W`** 儲存變更（畫面上方會跳出成功寫入提示）。
+   * 按下 **`Alt + Q`** 離開 RU.EFI 並重啟電腦。
+
+### 步驟 4：調整黑蘋果 OpenCore config.plist
+BIOS 設定修改完成後，你的主機板已經原生為 macOS 釋放了足夠的顯存。請開啟 OpenCore 的 `config.plist`：
+1. 進入 `DeviceProperties` -> `PciRoot(0x0)/Pci(0x2,0x0)`。
+2. **刪除所有舊的顯存欺騙補丁**（如果之前加過）：
+   * 刪除 `framebuffer-stolenmem`
+   * 刪除 `framebuffer-fbmem`
+3. **僅保留基本的硬體加速參數**：
+   * `AAPL,ig-platform-id` -> `<00009B3E>`（Data 型態）
+   * `framebuffer-patch-enable` -> `<01000000>`（Data 型態）
+4. 儲存 `config.plist` 並開機進 macOS，你的 Intel UHD 620 顯卡此時應該能成功載入 **1536 MB 顯存** 並開啟全硬體渲染！
+
+---
+
+## 🚨 第三部分：如果失敗/出錯的救援與解決方案
+
+在 NVRAM 修改暫存器時，最怕改錯欄位或修改後導致電腦無法開機。以下是針對不同失敗狀況的應對措施：
+
+### 狀況 A：改完數值後，重啟黑屏 / 警報聲 / 無法開機進 BIOS
+不用慌張，這代表暫存器寫入的值超過 BIOS 接受範圍或改錯位址，導致 BIOS 檢驗失敗。請按以下步驟恢復：
+1. **硬體級 RTC / CMOS 重置（最有效）：**
+   * 長按電源鍵 10 秒強制關機，拔掉電源變壓器。
+   * 拆開 U939/B 後蓋，**拔掉主電池連接線**。
+   * 在主機板上找到 **CR2032 水銀鈕扣電池（CMOS 電池）**，將其拔下/斷開連接線。
+   * 按住電源鍵 30 秒以放盡主機板殘餘電量。
+   * 靜置 5 分鐘後，接回 RTC 電池與主電池，插上電源開機。
+   * BIOS 會自動清空所有自訂暫存器並恢復出廠預設（Restore Factory Defaults）。
+2. **利用富士通 Emergency Recovery（若有）：**
+   * U939/B 具備 BIOS 保護機制，出廠重置後即可正常按 `F2` 重新進入 BIOS。
+
+### 狀況 B：改完後依舊卡 7MB，或是進 macOS 直接「黑屏/無訊號」
+如果修改了 DVMT，但進 macOS 依然卡 7MB 或直接黑屏，請按照順序排查：
+1. **檢查 BIOS 是否自動重置：**
+   * 再次進入 RU.EFI 查看 `0x152` 欄位，確認數值是否依然維持在 `02` 或 `03`。如果變回 `01`，說明你的 BIOS 在重啟時觸發了 NVRAM 保護並還原了數值。
+   * **解法：** 改試 `02` (32MB) 而不是 `03` (64MB)；或者需要額外在 RU.EFI 裡將 **CFG Lock** 的 VarOffset 也改成 `00` (Disable)。
+2. **解決顯卡黑屏（BusID 連接埠對不上）：**
+   * 如果開機有聲音、鍵盤燈會亮，但螢幕黑屏，說明顯卡驅動成功載入，但 macOS 把信號發給了外接 HDMI 而是內建螢幕。
+   * **解法：** 在 `config.plist` 的 `boot-args` 裡暫時加入 **`igfxonln=1`** 或 **`-no_compat_check`**；並加入 `framebuffer-con0-type` 指定內建 eDP 螢幕。
+
+### 狀況 C：UEFITool / IFR Extractor 找不到 DVMT Pre-Allocated
+1. **更換解包工具：**
+   * 某些日系 BIOS 的語系文字被壓縮在 AMI/Insyde 的特殊 Setup 模組裡，可以改用 Universal BIOS Backup Toolkit 備份你目前的原生 BIOS，再用 AMISetupWriter 或 UEFITool NE (New Engine) 來開啟尋找。
+2. **搜尋替代關鍵字：**
+   * 嘗試搜尋 `DVMT`、`Stolen Memory` 或 `Graphics Memory`。
+
+按上述流程操作，就有極大機會成功解放 Intel UHD 620 硬體加速
 
 
