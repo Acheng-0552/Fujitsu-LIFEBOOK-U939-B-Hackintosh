@@ -290,7 +290,7 @@ BIOS 設定修改完成後，你的主機板已經原生為 macOS 釋放了足�
    * 刪除 `framebuffer-fbmem`
 3. **僅保留基本的硬體加速參數**：
    * `AAPL,ig-platform-id` -> `<00009B3E>`（Data 型態）
-   * `framebuffer-patch-enable` -> `<01000000>`（Data 型態）
+   * `device-id` -> `<9B3E0000>`（Data 型態）
 4. 儲存 `config.plist` 並開機進 macOS，你的 Intel UHD 620 顯卡此時應該能成功載入 **1536 MB 顯存** 並開啟全硬體渲染！
 
 ---
