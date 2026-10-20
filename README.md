@@ -29,8 +29,7 @@ Fujitsu LIFEBOOK U939/B (i5-8265U / UHD 620)黑蘋果macOS Sequoia 15 EFI &amp; 
   * [UnPlugged](https://github.com/corpnewt/UnPlugged)（離線安裝腳本 `UnPlugged.command`）
   * [gibMacOS](https://github.com/corpnewt/gibMacOS)（下載完整 macOS 安裝包）
   * [OpenCorePkg](https://github.com/acidanthera/OpenCorePkg/tree/master)（使用 Utilities/macrecovery 下載恢復鏡像）
-  *
-[GenSMBIOS](https://github.com/corpnewt/GenSMBIOS)（生成序號用） 
+  *  [GenSMBIOS](https://github.com/corpnewt/GenSMBIOS)（生成序號用） 
 
 ---
 
