@@ -128,29 +128,6 @@ Fujitsu LIFEBOOK U939/B (i5-8265U / UHD 620)黑蘋果macOS Sequoia 15 EFI &amp; 
 
 ---
 
-## 📋驅動順序與排錯
-
-在 `config.plist` 裡的 `Kernel -> Add` 必須維持標準順序：
-
-1. `Lilu.kext` (必須永遠排在第一個)
-2. `VirtualSMC.kext`
-3. `WhateverGreen.kext`
-4. `AppleALC.kext`
-5. `USBToolBox.kext`
-6. `UTBMap.kext`
-7. `CPUFriend.kext`
-8. `IntelMausi.kext`
-9. `itlwm.kext`
-10. `SMCBatteryManager.kext` / `SMCProcessor.kext` / `ECEnabler.kext`
-11. `VoodooPS2Controller.kext`
-12. `BrightnessKeys.kext`
-13. `VoodooI2C.kext` ➔ `VoodooI2CHID.kext`
-14. `IntelBluetoothFirmware.kext` ➔ `IntelBTPatcher.kext` ➔ `BlueToolFixup.kext`
-
-> ⚠️ **重複 VoodooInput 提示**：ProperTree 清掃發出 Duplicate CFBundleIdentifiers 警告時，**請直接點 Yes** 停用重複模組。
-
----
-
 # Fujitsu LifeBook U939/B RU.EFI 修改 BIOS DVMT 預分配顯存完整實作指南
 
 
