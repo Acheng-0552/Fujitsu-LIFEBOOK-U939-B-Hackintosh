@@ -199,14 +199,14 @@ Fujitsu LIFEBOOK U939/B (i5-8265U / UHD 620)黑蘋果macOS Sequoia 15 EFI &amp; 
 3. **讀取目前的數值：**
    * ​請先輸入以下指令確認目前 0x107 的數值，輸入 `setup_var 0x107
 `，如果成功讀出，且顯示 0x01（或類似預設值），代表成功對應到 Setup 變數。
- *​💡 如果出現 error: offset 0x107 is out of range（超出範圍）：
+   *​ 💡 如果出現 error: offset 0x107 is out of range（超出範圍）：
 依據文章說明，請依序嘗試以下替代指令：
  `​setup_var2 0x107`（會尋找 Custom 變數名稱）
  `​setup_var_3 0x107`（會過濾掉太小的虛擬 VarStore）
  ​`setup_var_cv Setup 0x107`（直接指定 VarStore 名稱為 Setup）
 4. **寫入新數值（改為 64MB）：**
    * 確定上述哪一個指令可以正確讀取後，在後面加上欲寫入的數值 0x02： `setup_var 0x107 0x02`。
-   *​​執行完後，再輸入一次： `setup_var 0x107`驗證，確認第二個 GUID 的 offset 0x107 顯示為 0x02
+   *​​ 執行完後，再輸入一次： `setup_var 0x107`驗證，確認第二個 GUID 的 offset 0x107 顯示為 0x02
    * 修改成功後，​輸入 `reboot`重啟電腦（請務必「完全關機」再開機，不要使用軟體重啟，這樣新的 NVRAM BIOS 設定才會完全生效）。
 
 ### 步驟 4：調整黑蘋果 OpenCore config.plist
