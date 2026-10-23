@@ -33,10 +33,10 @@ Fujitsu LIFEBOOK U939/B (i5-8265U / UHD 620)黑蘋果macOS Sequoia 15 EFI &amp; 
 
 ---
 
-## 🚀 第一階段：製作 OpenCore EFI 啟動檔案
+## 🚀 第一階段：製作 OpenCore EFI 啟動檔案（可使用我上傳的EFI）
 
 1. **偵測硬體並下載工具**：在 Windows 下執行 `OpCore-Simplify.exe`，切換到工具功能表，執行內建的硬體檢測工具，匯出報告。
-2. **設定硬體與系統版本**：選擇 macOS 版本（如 Sonoma 14 / Sequoia 15），勾選「僅使用 Intel 核顯」。
+2. **設定硬體與系統版本**：選擇 macOS 版本（如Sequoia 15），勾選「僅使用 Intel 核顯」。
 3. **自動生成 ACPI 補丁與驅動 (Kexts)**：工具會自動勾選 ACPI 補丁（如 FakeEC, PLUG 等）與必備驅動，並自動匹配最佳 SMBIOS 機型。
 4. **構建並匯出 EFI**：點擊「建構 EFI」，工具會下載最新版 OpenCorePkg 並在本機生成 `EFI` 資料夾。
 
@@ -136,13 +136,16 @@ Fujitsu LIFEBOOK U939/B (i5-8265U / UHD 620)黑蘋果macOS Sequoia 15 EFI &amp; 
 2. `VirtualSMC.kext`
 3. `WhateverGreen.kext`
 4. `AppleALC.kext`
-5. `IntelMausi.kext`
-6. `itlwm.kext`
-7. `SMCBatteryManager.kext` / `SMCProcessor.kext` / `ECEnabler.kext`
-8. `VoodooPS2Controller.kext`
-9. `BrightnessKeys.kext`
-10. `VoodooI2C.kext` ➔ `VoodooI2CHID.kext`
-11. `IntelBluetoothFirmware.kext` ➔ `IntelBTPatcher.kext` ➔ `BlueToolFixup.kext`
+5. `USBToolBox.kext`
+6. `UTBMap.kext`
+7. `CPUFriend.kext`
+8. `IntelMausi.kext`
+9. `itlwm.kext`
+10. `SMCBatteryManager.kext` / `SMCProcessor.kext` / `ECEnabler.kext`
+11. `VoodooPS2Controller.kext`
+12. `BrightnessKeys.kext`
+13. `VoodooI2C.kext` ➔ `VoodooI2CHID.kext`
+14. `IntelBluetoothFirmware.kext` ➔ `IntelBTPatcher.kext` ➔ `BlueToolFixup.kext`
 
 > ⚠️ **重複 VoodooInput 提示**：ProperTree 清掃發出 Duplicate CFBundleIdentifiers 警告時，**請直接點 Yes** 停用重複模組。
 
@@ -184,7 +187,7 @@ Fujitsu LIFEBOOK U939/B (i5-8265U / UHD 620)黑蘋果macOS Sequoia 15 EFI &amp; 
 
 ### 6. NVRAM
 * **7C436110-AB2A-4BBB-A880-FE41995C9F82**：
-  * `boot-args` ➔ `-v keepsyms=1 debug=0x100 -igfxblr` *( -igfxblr 為 Whiskey Lake 抗黑屏參數 )*
+  * `boot-args` ➔ `keepsyms=1 debug=0x100 -igfxblt -igfxmlr alcid=66` *( -igfxblr 為 Whiskey Lake 抗黑屏參數 )*
 
 ### 7. UEFI
 * **Drivers**：`OpenRuntime.efi` ➔ `True` | `OpenHfsPlus.efi` ➔ `True`
@@ -212,7 +215,7 @@ Fujitsu LIFEBOOK U939/B (i5-8265U / UHD 620)黑蘋果macOS Sequoia 15 EFI &amp; 
 
 ### 需要準備的工具與硬體：
 1. **Windows 10/11 環境**
-2. **空隨身碟**：1GB～32GB 即可，格式化為 **FAT32**。
+2. **空隨身碟**：1GB～8GB 即可，格式化為 **FAT32**。
 3. **工具軟體包**：
    - [UEFITool](https://github.com/LongSoft/UEFITool/releases)
    - [IFRExtractor-RS](https://github.com/LongSoft/IFRExtractor-RS)
@@ -299,7 +302,7 @@ BIOS 設定修改完成後，你的主機板已經原生為 macOS 釋放了足�
 
 在 NVRAM 修改暫存器時，最怕改錯欄位或修改後導致電腦無法開機。以下是針對不同失敗狀況的應對措施：
 
-### 狀況 A：改完數值後，重啟黑屏 / 警報聲 / 無法開機進 BIOS
+### 改完數值後，重啟黑屏 / 警報聲 / 無法開機進 BIOS
 不用慌張，這代表暫存器寫入的值超過 BIOS 接受範圍或改錯位址，導致 BIOS 檢驗失敗。請按以下步驟恢復：
 1. **硬體級 RTC / CMOS 重置（最有效）：**
    * 長按電源鍵 10 秒強制關機，拔掉電源變壓器。
@@ -310,15 +313,6 @@ BIOS 設定修改完成後，你的主機板已經原生為 macOS 釋放了足�
    * BIOS 會自動清空所有自訂暫存器並恢復出廠預設（Restore Factory Defaults）。
 2. **利用富士通 Emergency Recovery（若有）：**
    * U939/B 具備 BIOS 保護機制，出廠重置後即可正常按 `F2` 重新進入 BIOS。
-
-### 狀況 B：改完後依舊卡 7MB，或是進 macOS 直接「黑屏/無訊號」
-如果修改了 DVMT，但進 macOS 依然卡 7MB 或直接黑屏，請按照順序排查：
-1. **檢查 BIOS 是否自動重置：**
-   * 再次進入 RU.EFI 查看 `0x152` 欄位，確認數值是否依然維持在 `02` 或 `03`。如果變回 `01`，說明你的 BIOS 在重啟時觸發了 NVRAM 保護並還原了數值。
-   * **解法：** 改試 `02` (32MB) 而不是 `03` (64MB)；或者需要額外在 RU.EFI 裡將 **CFG Lock** 的 VarOffset 也改成 `00` (Disable)。
-2. **解決顯卡黑屏（BusID 連接埠對不上）：**
-   * 如果開機有聲音、鍵盤燈會亮，但螢幕黑屏，說明顯卡驅動成功載入，但 macOS 把信號發給了外接 HDMI 而是內建螢幕。
-   * **解法：** 在 `config.plist` 的 `boot-args` 裡暫時加入 **`igfxonln=1`** 或 **`-no_compat_check`**；並加入 `framebuffer-con0-type` 指定內建 eDP 螢幕。
 
 ## 按上述流程操作，就有極大機會成功解放 Intel UHD 620 硬體加速
 
