@@ -199,7 +199,7 @@ Fujitsu LIFEBOOK U939/B (i5-8265U / UHD 620)黑蘋果macOS Sequoia 15 EFI &amp; 
 3. **讀取目前的數值：**
    * ​請先輸入以下指令確認目前 0x107 的數值，輸入 `setup_var 0x107
 `，如果成功讀出，且顯示 0x01（或類似預設值），代表成功對應到 Setup 變數。
-   *​💡 如果出現 error: offset 0x107 is out of range（超出範圍）：
+ *​💡 如果出現 error: offset 0x107 is out of range（超出範圍）：
 依據文章說明，請依序嘗試以下替代指令：
  `​setup_var2 0x107`（會尋找 Custom 變數名稱）
  `​setup_var_3 0x107`（會過濾掉太小的虛擬 VarStore）
