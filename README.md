@@ -151,59 +151,6 @@ Fujitsu LIFEBOOK U939/B (i5-8265U / UHD 620)黑蘋果macOS Sequoia 15 EFI &amp; 
 
 ---
 
-## 🔍 config.plist 終極檢查清單
-
-### 1. ACPI
-* [x] **Add**：`SSDT-PLUG.aml` / `SSDT-EC-USBX.aml` / `SSDT-PNLF.aml`
-* [x] **Quirks**：`FadtEnableReset` ➔ `False` | `ResetHwSig` ➔ `False` | `SyncTableIds` ➔ `False`
-
-### 2. Booter -> Quirks
-* [x] `AvoidRuntimeDefrag` ➔ `True`
-* [x] `DevirtualiseMmio` ➔ `False`
-* [x] `EnableSafeModeSlide` ➔ `True`
-* [x] `RebuildAppleMemoryMap` ➔ `True` (Whiskey Lake 必開)
-* [x] `SetupVirtualMap` ➔ `True`
-* [x] `SyncRuntimePermissions` ➔ `True`
-
-### 3. DeviceProperties -> Add
-* **內顯 `PciRoot(0x0)/Pci(0x2,0x0)`**：
-  * `AAPL,ig-platform-id` (`Data`) ➔ `00009B3E`
-  * `device-id` (`Data`) ➔ `9B3E0000`
-  * `framebuffer-patch-enable` (`Data`) ➔ `01000000`
-  * `framebuffer-stolenmem` (`Data`) ➔ `00003001`
-  * `framebuffer-fbmem` (`Data`) ➔ `00000002`
-* **音效 `PciRoot(0x0)/Pci(0x1F,0x3)`**：
-  * `layout-id` (`Data`) ➔ `03000000`
-
-### 4. Kernel -> Quirks
-* [x] `AppleCpuPmCfgLock` ➔ `False`
-* [x] `AppleXcpmCfgLock` ➔ `True` (防止 CFG-Lock 卡死)
-* [x] `DisableIOMapper` ➔ `True` (防止 VT-d 崩潰)
-* [x] `XhciPortLimit` ➔ `False`
-
-### 5. Misc
-* **Boot**：`HideAuxiliary` ➔ `False` | `PickerMode` ➔ `Builtin` | `ShowPicker` ➔ `True` | `Timeout` ➔ `5`
-* **Security**：`AllowSetDefault` ➔ `True` | `DmgLoading` ➔ `Signed` | `SecureBootModel` ➔ `Disabled` | `Vault` ➔ `Optional`
-
-### 6. NVRAM
-* **7C436110-AB2A-4BBB-A880-FE41995C9F82**：
-  * `boot-args` ➔ `keepsyms=1 debug=0x100 -igfxblt -igfxmlr alcid=66` 
-
-### 7. UEFI
-* **Drivers**：`OpenRuntime.efi` ➔ `True` | `OpenHfsPlus.efi` ➔ `True`
-* **Output**：`ConsoleControl` ➔ `True` | `ProvideConsoleGop` ➔ `True` (解決選單無畫面) | `Resolution` ➔ `Max`
-* **Quirks**：`RequestBootVarRouting` ➔ `True`
-
----
-
-## 🚀 檢查完畢存檔四步驟
-1. 按 `Cmd + Shift + R` (OC Clean Snapshot) 重新掃描 Kexts 與 Drivers。
-2. 彈出重複驅動視窗點 **Yes**。
-3. 按 `Cmd + S` 儲存 `config.plist`。
-4. 重啟電腦，準備開機
-
----
-
 # Fujitsu LifeBook U939/B RU.EFI 修改 BIOS DVMT 預分配顯存完整實作指南
 
 
