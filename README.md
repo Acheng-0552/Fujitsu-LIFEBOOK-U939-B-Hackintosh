@@ -182,12 +182,12 @@ Fujitsu LIFEBOOK U939/B (i5-8265U / UHD 620)黑蘋果macOS Sequoia 15 EFI &amp; 
 * [x] `XhciPortLimit` ➔ `False`
 
 ### 5. Misc
-* **Boot**：`HideAuxiliary` ➔ `False` | `PickerMode` ➔ `Builtin` (排除圖形黑屏) | `ShowPicker` ➔ `True` | `Timeout` ➔ `5`
+* **Boot**：`HideAuxiliary` ➔ `False` | `PickerMode` ➔ `Builtin` | `ShowPicker` ➔ `True` | `Timeout` ➔ `5`
 * **Security**：`AllowSetDefault` ➔ `True` | `DmgLoading` ➔ `Signed` | `SecureBootModel` ➔ `Disabled` | `Vault` ➔ `Optional`
 
 ### 6. NVRAM
 * **7C436110-AB2A-4BBB-A880-FE41995C9F82**：
-  * `boot-args` ➔ `keepsyms=1 debug=0x100 -igfxblt -igfxmlr alcid=66` *( -igfxblr 為 Whiskey Lake 抗黑屏參數 )*
+  * `boot-args` ➔ `keepsyms=1 debug=0x100 -igfxblt -igfxmlr alcid=66` 
 
 ### 7. UEFI
 * **Drivers**：`OpenRuntime.efi` ➔ `True` | `OpenHfsPlus.efi` ➔ `True`
